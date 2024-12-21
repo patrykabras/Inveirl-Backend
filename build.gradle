@@ -1,0 +1,90 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.liquibase:liquibase-gradle-plugin:2.2.2'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.0'
+    id 'io.spring.dependency-management' version '1.1.6'
+}
+
+apply plugin: 'org.liquibase.gradle'
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+
+    liquibaseRuntime.extendsFrom runtimeClasspath
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // SpringBoot
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.liquibase:liquibase-core'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // OpenApi doc
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.7.0'
+
+    // Lombook
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Database
+    implementation group: 'com.zaxxer', name: 'HikariCP', version: '6.2.1'
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.4'
+    testImplementation group: 'com.h2database', name: 'h2', version: '2.3.232'
+
+    // Liquibase
+    implementation 'org.liquibase:liquibase-core'
+    liquibaseRuntime group: 'info.picocli', name: 'picocli', version: '4.7.6'
+    liquibaseRuntime group: 'org.postgresql', name: 'postgresql', version: '42.7.4'
+    liquibaseRuntime sourceSets.main.runtimeClasspath
+    liquibaseRuntime sourceSets.main.output
+
+    // JUnit
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.3'
+
+    // Test
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+test {
+    useJUnitPlatform()
+}
+
+liquibase {
+    activities { main }
+}
+
+bootRun {
+    systemProperty "spring.profiles.active", "local"
+}
