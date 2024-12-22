@@ -6,5 +6,33 @@
 
     <!-- @formatter:off -->
 
+    <changeSet author="pabr" id="INV-2">
+        <comment>
+            Added user and refresh token
+        </comment>
+        <sql>
+            CREATE TABLE users (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            username varchar(50) NOT NULL,
+            email varchar(100) NOT NULL,
+            password varchar(100) NOT NULL,
+            role varchar(20) NOT NULL DEFAULT 'USER',
+            creation_date timestamp NOT NULL,
+            modification_date timestamp
+            );
+
+            CREATE TABLE user_refresh_tokens (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id UUID NOT NULL,
+            refresh_token UUID NOT NULL,
+            active BOOLEAN DEFAULT false,
+            creation_date timestamp NOT NULL,
+            modification_date timestamp
+            );
+
+            ALTER TABLE user_refresh_tokens ADD CONSTRAINT fk_user_refresh_tokens_user_id FOREIGN KEY (user_id) REFERENCES users(id);
+        </sql>
+    </changeSet>
+
     <!-- @formatter:on -->
 </databaseChangeLog>
