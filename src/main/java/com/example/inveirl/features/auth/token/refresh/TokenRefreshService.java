@@ -17,6 +17,21 @@ class TokenRefreshService {
         final TokenRefreshUserRefreshTokensEntity token = getActiveRefreshTokenBy(request.getRefreshToken());
 
         TokenRefreshUsersEntity user = token.getUser();
+        final String jwtToken = jwtService.generateToken(user);
+
+        return TokenRefreshResponse.builder()
+                                   .name(user.getName())
+                                   .token(jwtToken)
+                                   .expiresIn(jwtService.getUserExpirationTime())
+                                   .refreshToken(request.getRefreshToken())
+                                   .build();
+    }
+
+    public TokenRefreshResponse refreshAdminToken(final TokenRefreshRequest request) {
+        final TokenRefreshUserRefreshTokensEntity token = getActiveRefreshTokenBy(request.getRefreshToken());
+
+        TokenRefreshUsersEntity user = token.getUser();
+        user.validateIsAdmin(request.getRefreshToken());
         if (user.isAdmin()) {
             final String jwtToken = jwtService.generateAdminToken(user);
             return TokenRefreshResponse.builder()
