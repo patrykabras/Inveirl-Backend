@@ -4,6 +4,8 @@ import com.example.inveirl.infrastructure.auth.jwt.JwtService;
 import com.example.inveirl.infrastructure.enumeration.RoleEnum;
 import com.example.inveirl.infrastructure.exceptions.RefreshTokenNotFoundException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -20,14 +22,14 @@ class TokenRefreshServiceTest {
             mock(TokenRefreshUserRefreshTokensRepository.class);
     private final TokenRefreshService service = new TokenRefreshService(repository, jwtService);
 
-
-    @Test
-    void shouldRefreshTokenForNonAdminRole() {
+    @ParameterizedTest
+    @EnumSource(RoleEnum.class)
+    void shouldRefreshTokenForRole(final RoleEnum role) {
         // given
         final TokenRefreshRequest request = TokenRefreshRequest.builder()
                                                                .refreshToken(UUID.randomUUID())
                                                                .build();
-        final TokenRefreshUserRefreshTokensEntity token = prepareTokenEntity(RoleEnum.USER);
+        final TokenRefreshUserRefreshTokensEntity token = prepareTokenEntity(role);
         when(repository.findByRefreshTokenAndActiveIsTrue(any())).thenReturn(Optional.of(token));
         when(jwtService.generateToken(any())).thenReturn("secure.jwt.code");
 
@@ -36,12 +38,11 @@ class TokenRefreshServiceTest {
 
         // then
         verify(jwtService).generateToken(token.getUser());
-        verify(jwtService, never()).generateAdminToken(token.getUser());
         assertEquals("secure.jwt.code", response.getToken());
     }
 
     @Test
-    void shouldRefreshTokenForAdminRole() {
+    void shouldRefreshAdminTokenForAdminRole() {
         // given
         final TokenRefreshRequest request = TokenRefreshRequest.builder()
                                                                .refreshToken(UUID.randomUUID())
@@ -51,12 +52,31 @@ class TokenRefreshServiceTest {
         when(jwtService.generateAdminToken(any())).thenReturn("secure.jwt.code");
 
         // when
-        final TokenRefreshResponse response = service.refreshToken(request);
+        final TokenRefreshResponse response = service.refreshAdminToken(request);
 
         // then
         verify(jwtService).generateAdminToken(token.getUser());
         verify(jwtService, never()).generateToken(token.getUser());
         assertEquals("secure.jwt.code", response.getToken());
+    }
+
+    @Test
+    void shouldThrowRefreshTokenNotFoundExceptionWhenRefreshAdminTokenForUserRole() {
+        // given
+        final UUID refreshToken = UUID.randomUUID();
+        final TokenRefreshRequest request = TokenRefreshRequest.builder()
+                                                               .refreshToken(refreshToken)
+                                                               .build();
+        final TokenRefreshUserRefreshTokensEntity token = prepareTokenEntity(RoleEnum.USER);
+        when(repository.findByRefreshTokenAndActiveIsTrue(any())).thenReturn(Optional.of(token));
+        when(jwtService.generateAdminToken(any())).thenReturn("secure.jwt.code");
+
+        // when
+        final RefreshTokenNotFoundException exception = assertThrows(RefreshTokenNotFoundException.class,
+                                                                     () -> service.refreshAdminToken(request));
+
+        // then
+        assertEquals("Refresh token '" + refreshToken + "' not found", exception.getMessage());
     }
 
     @Test

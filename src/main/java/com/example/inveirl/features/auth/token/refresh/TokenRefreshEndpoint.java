@@ -16,4 +16,9 @@ class TokenRefreshEndpoint {
     public TokenRefreshResponse refreshToken(@RequestBody final TokenRefreshRequest request) {
         return service.refreshToken(request);
     }
+
+    @PostMapping("/auth/admin/refresh")
+    public TokenRefreshResponse refreshAdminToken(@RequestBody final TokenRefreshRequest request) {
+        return service.refreshAdminToken(request);
+    }
 }

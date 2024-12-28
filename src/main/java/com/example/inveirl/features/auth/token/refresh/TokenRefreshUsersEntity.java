@@ -1,6 +1,7 @@
 package com.example.inveirl.features.auth.token.refresh;
 
 import com.example.inveirl.infrastructure.enumeration.RoleEnum;
+import com.example.inveirl.infrastructure.exceptions.RefreshTokenNotFoundException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -79,5 +80,11 @@ class TokenRefreshUsersEntity implements UserDetails {
 
     public boolean isAdmin() {
         return RoleEnum.ADMIN.equals(role);
+    }
+
+    public void validateIsAdmin(final UUID refreshToken) {
+        if (!RoleEnum.ADMIN.equals(role)) {
+            throw RefreshTokenNotFoundException.of(refreshToken);
+        }
     }
 }
