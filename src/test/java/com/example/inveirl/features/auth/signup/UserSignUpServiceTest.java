@@ -1,5 +1,6 @@
 package com.example.inveirl.features.auth.signup;
 
+import com.example.inveirl.features.auth.login.UserLogInFacade;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,7 +12,8 @@ class UserSignUpServiceTest {
 
     private final UserSignUpUsersRepository repository = mock(UserSignUpUsersRepository.class);
     private final PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
-    private final UserSignUpService service = new UserSignUpService(repository, passwordEncoder);
+    private final UserLogInFacade userLogInFacade = mock(UserLogInFacade.class);
+    private final UserSignUpService service = new UserSignUpService(repository, passwordEncoder, userLogInFacade);
 
     @Test
     void shouldSignUpUser() {
@@ -33,12 +35,12 @@ class UserSignUpServiceTest {
         service.signup(request);
 
         // then
-        verify(repository).save(argument.capture());
+        verify(repository).saveAndFlush(argument.capture());
         final UserSignUpUsersEntity savedEntity = argument.getValue();
         assertEquals(email, savedEntity.getEmail());
         assertEquals(encodedPassword, savedEntity.getPassword());
         assertEquals(username, savedEntity.getUsername());
-
+        verify(userLogInFacade).authenticate(email, password);
     }
 
 }
