@@ -10,10 +10,18 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-class UserLogInService {
+class UserLogInService implements UserLogInFacade {
     private final AuthenticationManager authenticationManager;
     private final UserLogInUsersRepository repository;
     private final JwtService jwtService;
+
+    @Override
+    public UserLogInResponse authenticate(String email, String password) {
+        return authenticate(UserLogInRequest.builder()
+                                            .email(email)
+                                            .password(password)
+                                            .build());
+    }
 
     public UserLogInResponse authenticate(final UserLogInRequest request) {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(request.getEmail(),
