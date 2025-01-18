@@ -1,6 +1,5 @@
-package com.example.inveirl.admin;
+package com.example.inveirl;
 
-import com.example.inveirl.InveirlApplication;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.annotation.AliasFor;

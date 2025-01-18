@@ -1,6 +1,6 @@
 package com.example.inveirl.admin.users.list;
 
-import com.example.inveirl.admin.AbstractSpringIntegrationTest;
+import com.example.inveirl.AbstractSpringIntegrationTest;
 import com.example.inveirl.infrastructure.enumeration.RoleEnum;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
