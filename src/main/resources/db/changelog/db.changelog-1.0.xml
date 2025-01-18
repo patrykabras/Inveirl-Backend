@@ -34,5 +34,25 @@
         </sql>
     </changeSet>
 
+    <changeSet author="pabr" id="INV-4">
+        <comment>
+            Added items table
+        </comment>
+        <sql>
+            CREATE TABLE items (
+            id UUID PRIMARY KEY NOT NULL,
+
+            name varchar(50) NOT NULL,
+            description text,
+            type varchar(50) NOT NULL,
+            bar_code varchar(50),
+            image_url VARCHAR(2083),
+
+            creation_date timestamp NOT NULL,
+            modification_date timestamp
+            );
+        </sql>
+    </changeSet>
+
     <!-- @formatter:on -->
 </databaseChangeLog>
