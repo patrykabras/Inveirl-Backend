@@ -18,6 +18,16 @@ apply plugin: 'org.liquibase.gradle'
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
+sourceSets {
+    integrationTest {
+        java.srcDir file('src/integrationTest/java')
+        resources.srcDir file('src/integrationTest/resources')
+        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
@@ -38,11 +48,14 @@ repositories {
 
 dependencies {
     // SpringBoot
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '3.4.0'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-rest'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // SpringBoot - DevTools
+    implementation 'org.springframework.boot:spring-boot-devtools'
 
     implementation group: 'org.springframework.boot', name: 'spring-boot-gradle-plugin', version: '3.4.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -59,6 +72,9 @@ dependencies {
     // Lombook
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.projectlombok:lombok'
 
     // Database
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '6.2.1'
@@ -79,18 +95,60 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.3'
 
     // Test
+    testImplementation 'com.h2database:h2'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.27.2'
+
+    integrationTestCompileOnly sourceSets.test.output
 }
+
+/ **
+* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Liquibase configuration
+* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+liquibase {
+    activities { main }
+}
+
+/ **
+* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Local profiles configuration
+* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+bootRun {
+    systemProperty "spring.profiles.active", "local"
+    sourceResources sourceSets.main
+}
+
+/ **
+* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Tasks configuration
+* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+integrationTestClasses.enabled = false
+
+/ **
+* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Tests configuration
+* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
 
 test {
     useJUnitPlatform()
 }
 
-liquibase {
-    activities { main }
+task integrationTest(type: Test) {
+    useJUnitPlatform()
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    description = 'Runs the integration tests.'
+
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    shouldRunAfter test
 }
 
-bootRun {
-    systemProperty "spring.profiles.active", "local"
+rootProject.tasks.named("processIntegrationTestResources") {
+    duplicatesStrategy = 'include'
 }
