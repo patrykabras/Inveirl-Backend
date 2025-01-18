@@ -1,7 +1,7 @@
-package com.example.inveirl.infrastructure.auth.jwt;
+package com.example.inveirl.auth.refresh;
 
-import com.example.inveirl.infrastructure.Metadata;
 import com.example.inveirl.infrastructure.enumeration.RoleEnum;
+import com.example.inveirl.infrastructure.exceptions.RefreshTokenNotFoundException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,34 +12,30 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-@Getter(AccessLevel.PACKAGE)
-@Builder(access = AccessLevel.PACKAGE)
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
-@NoArgsConstructor(access = AccessLevel.PACKAGE)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter(value = AccessLevel.PACKAGE)
 @Table(name = "users")
-@Entity(name = "JwtConfigurationUsersEntity")
-class JwtConfigurationUsersEntity implements UserDetails {
+@Entity(name = "TokenRefreshUsersEntity")
+class TokenRefreshUsersEntity implements UserDetails {
 
     @Id
-    @Column(nullable = false, insertable = false, updatable = false)
+    @Column(insertable = false, updatable = false)
     private UUID id;
 
-    @Column(nullable = false, insertable = false, updatable = false)
+    @Column(insertable = false, updatable = false)
     private String username;
 
-    @Column(nullable = false, insertable = false, updatable = false)
+    @Column(insertable = false, updatable = false)
     private String email;
 
-    @Column(nullable = false, insertable = false, updatable = false)
+    @Column(insertable = false, updatable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, insertable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     private RoleEnum role;
-
-    @Embedded
-    @Builder.Default
-    private Metadata metadata = new Metadata();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -80,5 +76,15 @@ class JwtConfigurationUsersEntity implements UserDetails {
 
     public String getName() {
         return username;
+    }
+
+    public boolean isAdmin() {
+        return RoleEnum.ADMIN.equals(role);
+    }
+
+    public void validateIsAdmin(final UUID refreshToken) {
+        if (!RoleEnum.ADMIN.equals(role)) {
+            throw RefreshTokenNotFoundException.of(refreshToken);
+        }
     }
 }
