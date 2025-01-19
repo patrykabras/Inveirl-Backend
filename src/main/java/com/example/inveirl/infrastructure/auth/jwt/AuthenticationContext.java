@@ -3,7 +3,13 @@ package com.example.inveirl.infrastructure.auth.jwt;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.UUID;
+
 public class AuthenticationContext {
+
+    public static UUID getCurrentUserId() {
+        return getCurrentUser().getId();
+    }
 
     public static AuthenticatedUser getCurrentUser() {
         final Authentication authentication = SecurityContextHolder.getContext()

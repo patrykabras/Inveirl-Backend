@@ -54,5 +54,29 @@
         </sql>
     </changeSet>
 
+    <changeSet author="pabr" id="INV-17">
+        <comment>
+            Added users inventories table
+        </comment>
+        <sql>
+            CREATE TABLE users_inventories (
+            id UUID PRIMARY KEY NOT NULL,
+            user_id UUID NOT NULL,
+            item_id UUID NOT NULL,
+
+            quantity_type varchar(50) NOT NULL,
+            quantity FLOAT NOT NULL,
+            is_exists BOOLEAN DEFAULT true,
+            expiration_date timestamp,
+
+            creation_date timestamp NOT NULL,
+            modification_date timestamp
+            );
+
+            ALTER TABLE users_inventories ADD CONSTRAINT fk_users_inventories_user_id FOREIGN KEY (user_id) REFERENCES users(id);
+            ALTER TABLE users_inventories ADD CONSTRAINT fk_users_inventories_item_id FOREIGN KEY (item_id) REFERENCES items(id);
+        </sql>
+    </changeSet>
+
     <!-- @formatter:on -->
 </databaseChangeLog>
