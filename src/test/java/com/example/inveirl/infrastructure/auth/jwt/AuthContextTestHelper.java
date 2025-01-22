@@ -13,20 +13,27 @@ import java.util.UUID;
 
 public class AuthContextTestHelper {
 
-    public static void prepareAuthContext(final RoleEnum role) {
+    public static void prepareAuthContext(final UUID userId, final RoleEnum role) {
         SecurityContextHolder.clearContext();
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role.name()));
-        Authentication authentication = new UsernamePasswordAuthenticationToken(prepareUserEntity(role),
+        Authentication authentication = new UsernamePasswordAuthenticationToken(prepareUserEntity(userId, role),
                                                                                 null,
                                                                                 authorities);
         securityContext.setAuthentication(authentication);
         SecurityContextHolder.setContext(securityContext);
     }
 
-    private static JwtConfigurationUsersEntity prepareUserEntity(final RoleEnum role) {
+    public static void prepareAuthContext(final RoleEnum role) {
+        prepareAuthContext(null, role);
+    }
+
+    private static JwtConfigurationUsersEntity prepareUserEntity(UUID userId, final RoleEnum role) {
+        if (userId == null) {
+            userId = UUID.randomUUID();
+        }
         return JwtConfigurationUsersEntity.builder()
-                                          .id(UUID.randomUUID())
+                                          .id(userId)
                                           .username("testUser")
                                           .email("test@test.com")
                                           .password("password")
